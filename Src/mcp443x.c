@@ -1,20 +1,20 @@
 /*************************************************************
- *
- *  This driver is used to generate the messages for the
- *  family of digital potentiometers mcp443x
- *
- *  Mesage structure:
- *  start bit -> high speed mode command (if 3.4 Mbit comm desired) -> control
- *byte  -> Ackknowledge bit from slave device -> Command Byte -> aknowledge bit
- *from slave device -> data byte -> High Speed CMD: Start bit: when the serial
- *data line is pulled low while the serial clock line is high (normal operation
- *the serial data line is stable while the serial clock line is high) Control
- *Byte: always starts with 01011 followed by the two address bits then the R/W
- *bit (0 is write, 1 is read) Command Byte: used when the write bit is set in
- *the address byte Data Byte (third byte): the byte of data that is to be
- *written to either the volitile wiper memory, or TCON register
- *
- *
+ 
+This driver is used to generate the messages for the family of
+digital potentiometers mcp443x.
+ 
+ Mesage structure:
+ start bit -> high speed mode command (if 3.4 Mbit comm desired) -> control
+ byte  -> Ackknowledge bit from slave device -> Command Byte -> aknowledge bit
+ from slave device -> data byte -> High Speed CMD: Start bit: when the serial
+ data line is pulled low while the serial clock line is high (normal operation
+ the serial data line is stable while the serial clock line is high) Control
+ Byte: always starts with 01011 followed by the two address bits then the R/W
+ bit (0 is write, 1 is read) Command Byte: used when the write bit is set in
+ the address byte Data Byte (third byte): the byte of data that is to be
+ written to either the volitile wiper memory, or TCON register
+ 
+ 
  ************************************************************/
 
 
@@ -60,19 +60,20 @@ uint8_t mcp44xx_address_byte(uint8_t address){
 
 /**********************increment_wiper***********************
 This function is used to generate the byte messages needed to
-increment the value of the wiper for the specified channel at
-a given I2C address.
+increment the value of the wiper for the specified channel.
+Acceptable channel values are between 0 and 3.
+
+NOTE: the cp44xx_address_byte must be sent BEFORE this byte 
+      to access the appropriate device address
 
 Inputs:
-address -> uint8_t -> the i2c address of the potentiometer (0 - 3)
 channel -> uint8_t -> the desired channel (0 - 3)
-iinc_num -> uint8_t -> the number of times to increment the wiper
 
 Returns:
-ret_data -> uint8_t pointer array -> an array of bytes to be sent over I2C to the pot
+command_byte -> uint8_t
 ***************************************************************/
 
-uint8_t increment_wiper(uint8_t address, uint8_t channel, uint8_t inc_num) {
+uint8_t increment_wiper(uint8_t channel) {
   
   uint8_t command_byte = 0b00000100;
 
@@ -91,16 +92,17 @@ uint8_t increment_wiper(uint8_t address, uint8_t channel, uint8_t inc_num) {
 
 /**********************decrement_wiper***********************
 This function is used to generate the byte messages needed to
-decrement the value of the wiper for the specified channel at
-a given I2C address.
+decrement the value of the wiper for the specified channel.
+Acceptable channel values are between 0 and 3.
+
+NOTE: the cp44xx_address_byte must be sent BEFORE this byte 
+      to access the appropriate device address
 
 Inputs:
-address -> uint8_t -> the i2c address of the potentiometer (0 - 3)
 channel -> uint8_t -> the desired channel (0 - 3)
-iinc_num -> uint8_t -> the number of times to decrement the wiper
 
 Returns:
-ret_data -> uint8_t pointer array -> an array of bytes to be sent over I2C to the pot
+command_byte -> uint8_t
 ***************************************************************/
 
 uint8_t decrement_wiper(uint8_t address, uint8_t channel, uint8_t inc_num) {
