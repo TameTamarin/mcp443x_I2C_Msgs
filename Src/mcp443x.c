@@ -1,21 +1,12 @@
 /*************************************************************
  
 This driver is used to generate the messages for the family of
-digital potentiometers mcp443x.
+digital potentiometers mcp443x I2C communication.
  
- Mesage structure:
- start bit -> high speed mode command (if 3.4 Mbit comm desired) -> control
- byte  -> Ackknowledge bit from slave device -> Command Byte -> aknowledge bit
- from slave device -> data byte -> High Speed CMD: Start bit: when the serial
- data line is pulled low while the serial clock line is high (normal operation
- the serial data line is stable while the serial clock line is high) Control
- Byte: always starts with 01011 followed by the two address bits then the R/W
- bit (0 is write, 1 is read) Command Byte: used when the write bit is set in
- the address byte Data Byte (third byte): the byte of data that is to be
- written to either the volitile wiper memory, or TCON register
- 
- 
- ************************************************************/
+  
+************************************************************/
+
+
 
 
 /********************Includes********************************
@@ -52,7 +43,7 @@ uint8_t mcp44xx_address_byte(uint8_t address){
   address = address << 1;
 
   // Add the bit shifted address to the command
-  return address_byte + address;
+  return address_byte | address;
 
   
 
@@ -82,7 +73,7 @@ uint8_t increment_wiper(uint8_t channel) {
   channel_byte = 0b00010000 << channel;
   
   //Generate command byte
-  command_byte = command_byte + channel_byte;
+  command_byte = command_byte | channel_byte;
 
   
   return command_byte;
@@ -115,7 +106,7 @@ uint8_t decrement_wiper(uint8_t address, uint8_t channel, uint8_t inc_num) {
   
 
   //Generate command byte
-  command_byte = command_byte + channel_byte;
+  command_byte = command_byte | channel_byte;
 
   return command_byte;
 }
@@ -154,21 +145,13 @@ Returns:
 ret_data -> uint8_t pointer array -> an array of bytes to be sent over I2C to the pot
 ***************************************************************/
 
-uint8_t *set_pot_wiper_val(uint8_t address, uint8_t channel,uint8_t wiper_value) {
-  uint8_t *ret_data = (uint8_t *)malloc(3);
-  address = address << 1;
-  uint8_t address_byte = 0b01011000 + address + write_bit;
-  ret_data[0] = address_byte;
+uint8_t set_pot_wiper_val(uint8_t channel) {
   
   // bit shift the intial command by channel num
   uint8_t command_byte = 0b00010000 << channel;
   
-  // add the write command (00) to the command bytes bit 2 and 3 locatons
-  command_byte = command_byte + 0b00000000;
-                                 
-  ret_data[1] = command_byte;
-  ret_data[2] = wiper_value;
-  return ret_data;
+  // add the write command (11) to the command bytes bit 2 and 3 locatons                                 
+  return (command_byte | 0b00001100);
 }
 
 
@@ -184,12 +167,11 @@ Returns:
 ret_data -> uint8_t pointer array -> an array of bytes to be sent over I2C to the pot
 ***************************************************************/
 
-uint8_t *read_pot_data(uint8_t address) {
-  uint8_t *ret_data = (uint8_t *)malloc(1);
+uint8_t read_pot_data(uint8_t address) {
   address = address << 1;
-  uint8_t address_byte = 0b01011000 + address + read_bit;
-  ret_data[0] = address_byte;
-  return ret_data;
+  read_bit = 0b00000001;
+  uint8_t address_byte = 0b01011000 | address | read_bit;
+  return address_byte;
 }
 
 
