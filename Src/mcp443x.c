@@ -11,7 +11,7 @@ digital potentiometers mcp443x I2C communication.
 
 /********************Includes********************************
 *************************************************************/
-#include "mcp443x.h"
+#include "../Inc/mcp443x.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
