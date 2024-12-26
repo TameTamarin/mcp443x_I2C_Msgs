@@ -11,7 +11,7 @@ digital potentiometers mcp443x I2C communication.
 
 /********************Includes********************************
 *************************************************************/
-#include "mcp443x.h"
+#include "../Inc/mcp443x.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -96,7 +96,7 @@ Returns:
 command_byte -> uint8_t
 ***************************************************************/
 
-uint8_t decrement_wiper(uint8_t address, uint8_t channel, uint8_t inc_num) {
+uint8_t decrement_wiper(uint8_t channel) {
   
   uint8_t command_byte = 0b00001000;
 
