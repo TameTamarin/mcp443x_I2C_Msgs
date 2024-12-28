@@ -23,6 +23,37 @@ uint8_t read_bit = 1;
 uint8_t write_bit = 0;
 
 
+
+/**********************wiper_chan_to_dev_address**************
+This function is used to generate the byte that corresponds
+to the device memory address for the desired channel.  This
+byte is to be used in tandem with other command bytes.  The
+command byte has format 0bAAAAxxxx, where the bits marked
+with 'A' are the bits associated with the memory address.
+
+Inputs:
+channel -> uint8_t -> the desired channel (0 - 5)
+
+Returns:
+dev_address_byte -> uint8_t 
+***************************************************************/
+static uint8_t wiper_chan_to_dev_address(uint8_t channel){
+  
+  // initialize the address_byte variable
+  uint8_t address_byte = 0b00000000;
+  
+  // create array to retrieve the value of the channel address
+  uint8_t chan_address_decode[] = {0x0, 0x1, 0x6, 0x7};
+  
+  // get address byte and bit shift into position
+  address_byte = chan_address_decode[channel] << 4;
+
+  // Add the bit shifted address to the command
+  return address_byte;
+
+}
+
+
 /**********************mcp443x_address_byte***********************
 This function is used to generate the address byte for the mcp443x
 digital potentiometer.
@@ -35,7 +66,7 @@ address_byte -> uint8_t
 ***************************************************************/
 uint8_t mcp44xx_address_byte(uint8_t address){
   // Address byte has a constant 0b01011XX0 (0x58)
-  // XX is the poasition of the address 
+  // XX is the position of the address 
   uint8_t address_byte = 0x58;
   
   // The address for the desired device starts of the second bit
@@ -67,13 +98,9 @@ command_byte -> uint8_t
 uint8_t increment_wiper(uint8_t channel) {
   
   uint8_t command_byte = 0b00000100;
-
-  // bit shift the intial command by channel num
-  uint8_t channel_byte = 0b00000000;
-  channel_byte = 0b00010000 << channel;
   
-  //Generate command byte
-  command_byte = command_byte | channel_byte;
+  //Generate command byte by OR'ing command with the channel address
+  command_byte = command_byte | wiper_chan_to_dev_address(channel);
 
   
   return command_byte;
@@ -82,9 +109,9 @@ uint8_t increment_wiper(uint8_t channel) {
 
 
 /**********************decrement_wiper***********************
-This function is used to generate the byte messages needed to
-decrement the value of the wiper for the specified channel.
-Acceptable channel values are between 0 and 3.
+This function is used to generate the byte command message
+needed to decrement the value of the wiper for the specified
+channel.  Acceptable channel values are between 0 and 3.
 
 NOTE: the cp44xx_address_byte must be sent BEFORE this byte 
       to access the appropriate device address
@@ -98,15 +125,10 @@ command_byte -> uint8_t
 
 uint8_t decrement_wiper(uint8_t channel) {
   
-  uint8_t command_byte = 0b00001000;
-
-  // bit shift the intial command by channel num
-  uint8_t channel_byte = 0b00000000;
-  channel_byte = 0b00010000 << channel;
-  
+  uint8_t command_byte = 0b00001000;  
 
   //Generate command byte
-  command_byte = command_byte | channel_byte;
+  command_byte = command_byte | wiper_chan_to_dev_address(channel);
 
   return command_byte;
 }
