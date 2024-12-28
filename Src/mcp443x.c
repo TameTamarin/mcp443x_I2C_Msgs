@@ -154,8 +154,8 @@ uint8_t *set_pot_terminal_cons(uint8_t address, uint8_t channel, uint8_t switch_
 
 
 /**********************set_pot_wiper_val***********************
-This function is used to generate the byte messages needed to
-set the value of the pot wiper at a given channgel to a specific
+This function is used to generate the byte message needed to
+set the value of the pot wiper at a given channel to a specific
 value.
 
 Inputs:
