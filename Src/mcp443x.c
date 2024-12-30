@@ -15,6 +15,7 @@ digital potentiometers mcp443x I2C communication.
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 
 /********************Globals********************************
@@ -47,6 +48,36 @@ static uint8_t wiper_chan_to_dev_address(uint8_t channel){
   
   // get address byte and bit shift into position
   address_byte = chan_address_decode[channel] << 4;
+
+  // Add the bit shifted address to the command
+  return address_byte;
+
+}
+
+
+/**********************wiper_chan_to_dev_address**************
+This function is used to generate the byte that corresponds
+to the TCON device memory address for the desired wiper channel.
+This byte is to be used in tandem with other command bytes.  The
+command byte has format 0bAAAAxxxx, where the bits marked
+with 'A' are the bits associated with the memory address.
+
+Inputs:
+channel -> uint8_t -> the desired tcon register (0 - 3)
+
+Returns:
+dev_address_byte -> uint8_t 
+***************************************************************/
+static uint8_t tcon_num_to_dev_address(uint8_t channel){
+  
+  // initialize the address_byte variable
+  uint8_t address_byte = 0b00000000;
+  
+  // create array to retrieve the value of the channel address
+  uint8_t tcon_address_decode[] = {0x4, 0x4, 0xA, 0xA};
+  
+  // get address byte and bit shift into position
+  address_byte = tcon_address_decode[channel] << 4;
 
   // Add the bit shifted address to the command
   return address_byte;
@@ -97,11 +128,11 @@ command_byte -> uint8_t
 
 uint8_t increment_wiper(uint8_t channel) {
   
+  //00000100 is the base for the increment command
   uint8_t command_byte = 0b00000100;
   
   //Generate command byte by OR'ing command with the channel address
   command_byte = command_byte | wiper_chan_to_dev_address(channel);
-
   
   return command_byte;
 }
@@ -124,7 +155,8 @@ command_byte -> uint8_t
 ***************************************************************/
 
 uint8_t decrement_wiper(uint8_t channel) {
-  
+
+  //00001000 is the base for the decrement command
   uint8_t command_byte = 0b00001000;  
 
   //Generate command byte
@@ -135,19 +167,53 @@ uint8_t decrement_wiper(uint8_t channel) {
 
 
 
-/**********************set_pot_terminal_cons***********************
+/**********************set_pot_terminal_cons_cmd***********************
 This function is used to generate the byte messages needed to
-set the pot's internal terminal connections.
+set the pot's internal terminal connections.  This command REQUIRES
+for the set_pot_terminal_cons_data to follow.
 
 Inputs:
-address -> uint8_t -> the i2c address of the potentiometer (0 - 3)
 channel -> uint8_t -> the desired channel (0 - 3)
 switch_state -> uint8_t -> the state of the switch, on or off
 
 Returns:
 ret_data -> uint8_t pointer array -> an array of bytes to be sent over I2C to the pot
 ***************************************************************/
-uint8_t *set_pot_terminal_cons(uint8_t address, uint8_t channel, uint8_t switch_state) {
+uint8_t set_pot_terminal_cons_cmd(uint8_t channel) {
+  
+  //00000000 is the base for the write command
+  uint8_t command_byte = 0b00000000;  
+
+  //Generate command byte
+  command_byte = command_byte | tcon_num_to_dev_address(channel);
+
+  return command_byte;
+}
+
+
+/**********************set_pot_terminal_cons_data***********************
+This function is used to generate the byte messages needed to
+set the pot's internal terminal connections.  This function REQUIRES
+for the set_pot_terminal_cons_data_cmd to preceed it to inform the 
+mcp443x chip to accept data.
+
+Inputs:
+channel -> uint8_t -> the desired channel (0 - 3)
+hw_config_switch_state
+
+switch_state -> uint8_t -> the state of the switch, on or off
+
+Returns:
+ret_data -> uint8_t pointer array -> an array of bytes to be sent over I2C to the pot
+***************************************************************/
+uint8_t set_pot_terminal_cons_data(uint8_t channel, bool hw_config_switch_state, bool term_a_switch_state, bool term_w_switch_state, bool term_b_switch_state) {
+  
+  //00000000 is the base for the write command
+  uint8_t data_byte = 0b00000000;  
+
+  //Generate command byte
+  data_byte = data_byte | tcon_num_to_dev_address(channel);
+
   return 0x00;
 }
 
