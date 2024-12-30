@@ -225,9 +225,7 @@ set the value of the pot wiper at a given channel to a specific
 value.
 
 Inputs:
-address -> uint8_t -> the i2c address of the potentiometer (0 - 3)
 channel -> uint8_t -> the desired channel (0 - 3)
-wiper value -> uint8_t -> the value to set the wiper to
 
 Returns:
 ret_data -> uint8_t pointer array -> an array of bytes to be sent over I2C to the pot
@@ -235,11 +233,13 @@ ret_data -> uint8_t pointer array -> an array of bytes to be sent over I2C to th
 
 uint8_t set_pot_wiper_val(uint8_t channel) {
   
-  // bit shift the intial command by channel num
-  uint8_t command_byte = 0b00010000 << channel;
-  
-  // add the write command (11) to the command bytes bit 2 and 3 locatons                                 
-  return (command_byte | 0b00001100);
+  //00000000 is the base for the write command
+  uint8_t command_byte = 0b00000000;  
+
+  //Generate command byte
+  command_byte = command_byte | wiper_chan_to_dev_address(channel);
+
+  return command_byte;
 }
 
 
@@ -249,34 +249,43 @@ This function is used to setup the byte commands needed for
 ask the pot for data.
 
 Inputs:
-address -> uint8_t -> the i2c address of the potentiometer (0 - 3)
+channel -> uint8_t -> the channel of the potentiometer (0 - 3)
 
 Returns:
 ret_data -> uint8_t pointer array -> an array of bytes to be sent over I2C to the pot
 ***************************************************************/
 
-uint8_t read_pot_data(uint8_t address) {
-  address = address << 1;
-  read_bit = 0b00000001;
-  uint8_t address_byte = 0b01011000 | address | read_bit;
-  return address_byte;
+uint8_t read_pot_data(uint8_t channel) {
+
+//00001100 is the base for the read command
+  uint8_t command_byte = 0b00001100;  
+
+  //Generate command byte
+  command_byte = command_byte | wiper_chan_to_dev_address(channel);
+
+  return command_byte;
+}
+
+/**********************read_tcon_data***********************
+This function is used to setup the byte commands needed for
+the TCON register data request command.
+
+Inputs:
+channel -> uint8_t -> the channel of the potentiometer (0 - 3)
+
+Returns:
+ret_data -> uint8_t pointer array -> an array of bytes to be sent over I2C to the pot
+***************************************************************/
+
+uint8_t read_tcon_data(uint8_t channel) {
+
+//00001100 is the base for the read command
+  uint8_t command_byte = 0b00001100;  
+
+  //Generate command byte
+  command_byte = command_byte | tcon_num_to_dev_address(channel);
+
+  return command_byte;
 }
 
 
-/**********************compilier switch for testing***********************/
-
-
-#if MY_SWITCH
-int main() {
-
-  printf("Hello World from mcp443_message.c\n");
-  uint8_t increment_val = 4;
-  uint8_t *data = read_pot_data(1);
-  for (int i = 0; i <= increment_val; i++) {
-    printf("%x\n", data[i]);
-  }
-
-  return 0;
-}
-#else
-#endif

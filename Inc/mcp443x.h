@@ -13,4 +13,4 @@ uint8_t decrement_wiper(uint8_t channel);
 uint8_t set_pot_terminal_cons_cmd(uint8_t channel);
 uint8_t set_pot_terminal_cons_data(uint8_t channel, bool hw_config_switch_state, bool term_a_switch_state, bool term_w_switch_state, bool term_b_switch_state);
 uint8_t set_pot_wiper_val(uint8_t channel);
-uint8_t read_pot_data(uint8_t address);
+uint8_t read_pot_data(uint8_t channel);
